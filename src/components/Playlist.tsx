@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PlaylistItem from "./PlaylistItem";
 import IPlaylist from "../interfaces/IPlaylist";
 import "../core/ICore";
 
-// interface IProps {
-//   playlists: IPlaylist[];
-// }
+interface IProps {
+  playlists: IPlaylist[];
+  handleClick(e: React.MouseEvent<HTMLInputElement>): void;
+  // onChange(e: React.ChangeEvent<HTMLInputElement>): void;
+}
 
-const Playlist: React.FC = () => {
-  const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
-
+const Playlist: React.FC<IProps> = props => {
   const event = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault;
     console.log("my name is pikachu");
   };
 
-  useEffect(() => {
-    window.core.getPlaylists().then(result => {
-      setPlaylists(result);
-    });
-  }, []);
-
-  const playlistElements = playlists.map(playlist => {
-    return <PlaylistItem name={playlist.name} key={playlist.type + playlist.playlistId} />;
+  const playlistElements = props.playlists.map(playlist => {
+    return (
+      <PlaylistItem playlist={playlist} handleClick={props.handleClick} key={playlist.type + playlist.playlistId} />
+    );
   });
 
   return (

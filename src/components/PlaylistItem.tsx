@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
+import IPlaylist from "../interfaces/IPlaylist";
 
 interface IProps {
-  name: string;
+  playlist: IPlaylist;
+  handleClick(e: React.MouseEvent<HTMLInputElement>): void;
+  // onChange(e: React.ChangeEvent<HTMLInputElement>): void;
 }
 
 const PlaylistItem: React.FC<IProps> = props => {
-  const [isChecked, setIsChecked] = useState(false);
+  const playlist = props.playlist;
 
   return (
     <div>
-      <p onClick={() => setIsChecked(!isChecked)}>
-        <input type="checkbox" checked={isChecked} onChange={e => setIsChecked(e.currentTarget.checked)} />
-        <span>{props.name}</span>
+      <p data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
+        <input type="checkbox" checked={playlist.checked} onChange={() => console.log("clicked")} />
+        <span>{playlist.name}</span>
       </p>
     </div>
   );
