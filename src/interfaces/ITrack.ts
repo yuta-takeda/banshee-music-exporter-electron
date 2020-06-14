@@ -3,8 +3,8 @@ import IArtist from "./IArtist";
 
 interface ITrack {
   trackId: number;
-  artist: IArtist;
-  album: IAlbum;
+  artist: string;
+  album: string;
   uri: string;
   fileSize: number;
   title: string;

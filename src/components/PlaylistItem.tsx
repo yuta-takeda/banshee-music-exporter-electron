@@ -4,7 +4,6 @@ import IPlaylist from "../interfaces/IPlaylist";
 interface IProps {
   playlist: IPlaylist;
   handleClick(e: React.MouseEvent<HTMLInputElement>): void;
-  // onChange(e: React.ChangeEvent<HTMLInputElement>): void;
 }
 
 const PlaylistItem: React.FC<IProps> = props => {

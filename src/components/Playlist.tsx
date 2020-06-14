@@ -6,7 +6,6 @@ import "../core/ICore";
 interface IProps {
   playlists: IPlaylist[];
   handleClick(e: React.MouseEvent<HTMLInputElement>): void;
-  // onChange(e: React.ChangeEvent<HTMLInputElement>): void;
 }
 
 const Playlist: React.FC<IProps> = props => {

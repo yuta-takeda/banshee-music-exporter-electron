@@ -1,8 +1,10 @@
 import sqlite from "sqlite3";
-import ICore from "./ICore";
-import IPlaylist from "../interfaces/IPlaylist";
 import os from "os";
 import path from "path";
+import ICore from "./ICore";
+import IPlaylist from "../interfaces/IPlaylist";
+import ITrack from "../interfaces/ITrack";
+import IStatistics from "../interfaces/IStatistics";
 
 const DB_PATH = path.join(os.homedir(), "/.config/banshee-1/banshee.db");
 
@@ -58,9 +60,86 @@ const getPlaylists = async (): Promise<IPlaylist[]> => {
   });
 };
 
+const getTrackIds = async (type: string, playlistId: number): Promise<number[]> => {
+  return new Promise(resolve => {
+    bansheeDB.serialize(() => {
+      const playlistTable = type === "smart" ? "CoreSmartPlaylistEntries" : "CorePlaylistEntries";
+      const idColumn = type === "smart" ? "SmartPlaylistID" : "PlaylistID";
+
+      bansheeDB.all(
+        `
+        SELECT TrackID from ${playlistTable} where ${idColumn} = ${playlistId}
+        `,
+        (err, rows) => {
+          if (err) throw err;
+          const trackIds = rows.map(row => row.TrackID);
+          resolve(trackIds);
+        },
+      );
+    });
+  });
+};
+
+const getTracks = async (type: string, playlistId: number): Promise<ITrack[]> => {
+  const trackIds = await getTrackIds(type, playlistId);
+  console.log(trackIds.join(", "));
+  return new Promise(resolve => {
+    bansheeDB.serialize(() => {
+      bansheeDB.all(
+        `
+        SELECT TrackID, Uri, FileSize, CoreTracks.Title AS TrackTitle, CoreArtists.Name AS ArtistName,
+        CoreAlbums.Title AS AlbumTitle, CoreTracks.Duration
+        FROM CoreTracks
+        LEFT OUTER JOIN CoreArtists ON CoreTracks.ArtistID = CoreArtists.ArtistID
+        LEFT OUTER JOIN CoreAlbums ON CoreTracks.AlbumID = CoreAlbums.AlbumID
+        WHERE TrackID IN (${trackIds.join(", ")})
+        `,
+        (err, rows) => {
+          if (err) throw err;
+          console.log(rows);
+          const tracks: ITrack[] = rows.map(row => {
+            return {
+              trackId: row.TrackID,
+              artist: row.ArtistName,
+              album: row.AlbumTitle,
+              uri: row.Uri,
+              fileSize: row.FileSize,
+              title: row.TrackTitle,
+              duration: row.Duration,
+            };
+          });
+          resolve(tracks);
+        },
+      );
+    });
+  });
+};
+
+const calcStatistics = (statistics: IStatistics, newTracks?: ITrack[]): IStatistics => {
+  if (!newTracks) {
+    return statistics;
+  }
+
+  const existingIds = statistics.uniqTracks.map(track => track.trackId);
+  const toAddTracks = newTracks.filter(track => {
+    return !existingIds.includes(track.trackId);
+  });
+  const newUniqTracks = [...statistics.uniqTracks, ...toAddTracks];
+
+  const tracksCount = newUniqTracks.length;
+  const allFileSize = newUniqTracks.reduce((prev, current) => {
+    return prev + current.fileSize;
+  }, 0);
+
+  const newStatistics = { tracksCount: tracksCount, allFileSize: allFileSize, uniqTracks: newUniqTracks };
+  return newStatistics;
+};
+
 const core: ICore = {
   test,
   getPlaylists,
+  getTracks,
+  calcStatistics,
 };
 
 export default core;
