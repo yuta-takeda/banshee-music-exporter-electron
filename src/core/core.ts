@@ -14,13 +14,13 @@ const test = async (): Promise<void> => {
   await console.log("OK!");
 };
 
-const getPlaylists = async (): Promise<IPlaylist[]> => {
+const getNormalPlaylists = async (): Promise<IPlaylist[]> => {
   return new Promise(resolve => {
     bansheeDB.serialize(() => {
       bansheeDB.all("SELECT PlaylistID, Name from CorePlaylists", (err, rows) => {
         if (err) throw err;
         const playlists: IPlaylist[] = rows.map(row => {
-          return { playlistId: row.PlaylistID, name: row.Name, checked: false };
+          return { playlistId: row.PlaylistID, name: row.Name, type: "normal", checked: false };
         });
         resolve(playlists);
       });
@@ -28,17 +28,35 @@ const getPlaylists = async (): Promise<IPlaylist[]> => {
   });
 };
 
-// const getPlaylists = (): void => {
-//   bansheeDB.all("SELECT PlaylistID, Name from CorePlaylists", (err, rows) => {
-//     if (err) throw err;
-//     const playlists: void[] = rows.map(row => {
-//       console.log(row);
-//       // return { playlistId: row.playlistId, name: row.name, checked: false };
-//     });
-//     playlists;
-//     return;
-//   });
-// };
+const getSmartPlaylists = async (): Promise<IPlaylist[]> => {
+  return new Promise(resolve => {
+    bansheeDB.serialize(() => {
+      bansheeDB.all("SELECT SmartPlaylistID, Name from CoreSmartPlaylists", (err, rows) => {
+        if (err) throw err;
+        const playlists: IPlaylist[] = rows.map(row => {
+          return { playlistId: row.SmartPlaylistID, name: row.Name, type: "smart", checked: false };
+        });
+        resolve(playlists);
+      });
+    });
+  });
+};
+
+const getPlaylists = async (): Promise<IPlaylist[]> => {
+  const normalPlists = await getNormalPlaylists();
+  const smartPlists = await getSmartPlaylists();
+  return [normalPlists, smartPlists].flat().sort((a, b) => {
+    const nameA = a.name;
+    const nameB = b.name;
+    if (nameA < nameB) {
+      return -1;
+    }
+    if (nameA > nameB) {
+      return 1;
+    }
+    return 0;
+  });
+};
 
 const core: ICore = {
   test,

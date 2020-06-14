@@ -22,7 +22,7 @@ const Playlist: React.FC = () => {
   }, []);
 
   const playlistElements = playlists.map(playlist => {
-    return <PlaylistItem name={playlist.name} key={playlist.playlistId} />;
+    return <PlaylistItem name={playlist.name} key={playlist.type + playlist.playlistId} />;
   });
 
   return (
