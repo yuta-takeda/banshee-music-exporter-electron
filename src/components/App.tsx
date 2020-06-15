@@ -16,14 +16,6 @@ const App: React.FC = () => {
     });
   }, []);
 
-  // useEffect(() => {
-  //   const tracksCount = window.core.calcStatistics(playlist, uniqTracks);
-  //   console.log(tracksCount);
-  //   setTracksCount(tracksCount);
-
-  //   setUniqTracks(uniqTracks);
-  // }, [playlists]);
-
   const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
     const key = e.currentTarget.dataset.key;
 
@@ -40,16 +32,11 @@ const App: React.FC = () => {
       return playlist;
     });
 
-    Promise.all(updated).then(results => {
-      setPlaylists(results);
+    Promise.all(updated).then(newPlaylists => {
+      setPlaylists(newPlaylists);
 
-      const targetPlaylist = results.find(playlist => playlist.type + playlist.playlistId === key);
-      console.log(targetPlaylist);
-      if (targetPlaylist) {
-        const newStatistics = window.core.calcStatistics(statistics, targetPlaylist.entries);
-        console.log(newStatistics);
-        setStatistics(newStatistics);
-      }
+      const newStatistics = window.core.calcStatistics(statistics, newPlaylists);
+      setStatistics(newStatistics);
     });
   };
 

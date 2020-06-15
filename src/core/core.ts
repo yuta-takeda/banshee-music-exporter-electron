@@ -5,6 +5,7 @@ import ICore from "./ICore";
 import IPlaylist from "../interfaces/IPlaylist";
 import ITrack from "../interfaces/ITrack";
 import IStatistics from "../interfaces/IStatistics";
+import { stat } from "fs";
 
 const DB_PATH = path.join(os.homedir(), "/.config/banshee-1/banshee.db");
 
@@ -115,23 +116,21 @@ const getTracks = async (type: string, playlistId: number): Promise<ITrack[]> =>
   });
 };
 
-const calcStatistics = (statistics: IStatistics, newTracks?: ITrack[]): IStatistics => {
-  if (!newTracks) {
-    return statistics;
-  }
-
-  const existingIds = statistics.uniqTracks.map(track => track.trackId);
-  const toAddTracks = newTracks.filter(track => {
-    return !existingIds.includes(track.trackId);
+const calcStatistics = (statistics: IStatistics, playlists: IPlaylist[]): IStatistics => {
+  const allTracks: ITrack[] = [];
+  playlists.forEach(playlist => {
+    playlist.entries?.forEach(track => {
+      allTracks.push(track);
+    });
   });
-  const newUniqTracks = [...statistics.uniqTracks, ...toAddTracks];
+  const uniqTracks = Array.from(new Set(allTracks));
 
-  const tracksCount = newUniqTracks.length;
-  const allFileSize = newUniqTracks.reduce((prev, current) => {
+  const tracksCount = uniqTracks.length;
+  const allFileSize = uniqTracks.reduce((prev, current) => {
     return prev + current.fileSize;
   }, 0);
 
-  const newStatistics = { tracksCount: tracksCount, allFileSize: allFileSize, uniqTracks: newUniqTracks };
+  const newStatistics = { tracksCount: tracksCount, allFileSize: allFileSize, uniqTracks: uniqTracks };
   return newStatistics;
 };
 
