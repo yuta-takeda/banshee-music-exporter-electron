@@ -6,14 +6,10 @@ import "../core/ICore";
 interface IProps {
   playlists: IPlaylist[];
   handleClick(e: React.MouseEvent<HTMLInputElement>): void;
+  handleExecButton(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
 }
 
 const Playlist: React.FC<IProps> = props => {
-  const event = (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault;
-    console.log("my name is pikachu");
-  };
-
   const playlistElements = props.playlists.map(playlist => {
     return (
       <PlaylistItem playlist={playlist} handleClick={props.handleClick} key={playlist.type + playlist.playlistId} />
@@ -23,7 +19,7 @@ const Playlist: React.FC<IProps> = props => {
   return (
     <div>
       <div>{playlistElements}</div>
-      <button onClick={event}>転送開始</button>
+      <button onClick={props.handleExecButton}>転送開始</button>
     </div>
   );
 };

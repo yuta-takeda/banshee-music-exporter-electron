@@ -7,6 +7,7 @@ export default interface ICore {
   getPlaylists: () => Promise<IPlaylist[]>;
   getTracks: (type: string, playlistId: number) => Promise<ITrack[]>;
   calcStatistics: (statistics: IStatistics, playlists: IPlaylist[]) => IStatistics;
+  createPlaylist: (playlist: IPlaylist) => void;
 }
 
 declare global {

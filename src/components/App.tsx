@@ -40,9 +40,28 @@ const App: React.FC = () => {
     });
   };
 
+  const handleExecButton = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const targetPlaylists = playlists.filter(playlist => playlist.checked);
+    if (targetPlaylists.length === 0) {
+      alert("プレイリストを選択してください。");
+      return;
+    }
+
+    const result = window.confirm("楽曲の転送を開始します。よろしいですか？");
+    if (!result) return;
+
+    targetPlaylists.forEach(playlist => {
+      window.core.createPlaylist(playlist);
+    });
+
+    // sync tracks
+
+    alert("楽曲の転送が完了しました。");
+  };
+
   return (
     <div>
-      <Playlist playlists={playlists} handleClick={handleClick} />
+      <Playlist playlists={playlists} handleClick={handleClick} handleExecButton={handleExecButton} />
       <MessageBox tracksCount={statistics.tracksCount} allFileSize={statistics.allFileSize} />
       <LogBox log="**********" />
     </div>
