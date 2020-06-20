@@ -7,6 +7,7 @@
     "@types/electron": "^1.6.10",
     "electron": "^9.0.2",
     "electron-rebuild": "^1.11.0",
+    "electron-store": "^5.2.0",
     "eslint-loader": "^4.0.2",
     "html-webpack-plugin": "^4.3.0",
     "react": "^16.13.1",
@@ -43,6 +44,7 @@
     "start": "electron ./dist/main.js",
     "build": "tsc && webpack",
     "build:main": "tsc",
-    "build:render": "webpack"
+    "build:render": "webpack",
+    "rebuild": "./node_modules/.bin/electron-rebuild -w sqlite3 -p"
   }
 }

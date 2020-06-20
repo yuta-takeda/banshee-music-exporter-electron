@@ -1,10 +1,12 @@
-import { IpcRenderer } from "electron";
+import Store from "electron-store";
 import IPlaylist from "../interfaces/IPlaylist";
 import ITrack from "../interfaces/ITrack";
 import IStatistics from "../interfaces/IStatistics";
 
 export default interface ICore {
   test: () => Promise<void>;
+  writeConfig: (key: string, value: any) => void;
+  getConfig: (key: string, defaultValue: any) => any;
   getPlaylists: () => Promise<IPlaylist[]>;
   getTracks: (type: string, playlistId: number) => Promise<ITrack[]>;
   calcStatistics: (statistics: IStatistics, playlists: IPlaylist[]) => IStatistics;

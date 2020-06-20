@@ -15,9 +15,25 @@ const App: React.FC = () => {
   const [statistics, setStatistics] = useState<IStatistics>({ tracksCount: 0, allFileSize: 0, uniqTracks: [] });
 
   useEffect(() => {
-    window.core.getPlaylists().then(result => {
-      setPlaylists(result);
+    const activePlaylists: string[] = window.core.getConfig("activePlayLists", []);
+    window.core.getPlaylists().then(playlists => {
+      const checkedPlaylistsPromise = playlists.map(async playlist => {
+        if (activePlaylists.includes(playlist.type + playlist.playlistId)) {
+          const tracks = await window.core.getTracks(playlist.type, playlist.playlistId);
+          return { ...playlist, checked: true, entries: tracks };
+        } else {
+          return playlist;
+        }
+      });
+      Promise.all(checkedPlaylistsPromise).then(newPlaylists => {
+        setPlaylists(newPlaylists);
+
+        const newStatistics = window.core.calcStatistics(statistics, newPlaylists);
+        setStatistics(newStatistics);
+      });
     });
+    const saveBasePath = window.core.getConfig("saveBasePath", "");
+    setBasePath(saveBasePath);
   }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
@@ -39,6 +55,13 @@ const App: React.FC = () => {
     Promise.all(updated).then(newPlaylists => {
       setPlaylists(newPlaylists);
 
+      const activePlayListsKeys = playlists
+        .filter(playlist => playlist.checked)
+        .map(playlist => {
+          return playlist.type + playlist.playlistId;
+        });
+      window.core.writeConfig("activePlayLists", activePlayListsKeys);
+
       const newStatistics = window.core.calcStatistics(statistics, newPlaylists);
       setStatistics(newStatistics);
     });
@@ -46,6 +69,7 @@ const App: React.FC = () => {
 
   const handlePathBox = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBasePath(e.currentTarget.value);
+    window.core.writeConfig("saveBasePath", e.currentTarget.value);
   };
 
   const handleExecButton = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

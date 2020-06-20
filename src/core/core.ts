@@ -1,4 +1,5 @@
 import sqlite from "sqlite3";
+import Store from "electron-store";
 import os from "os";
 import path from "path";
 import ICore from "./ICore";
@@ -13,6 +14,16 @@ import { ipcRenderer } from "electron";
 const DB_PATH = path.join(os.homedir(), "/.config/banshee-1/banshee.db");
 
 const bansheeDB: sqlite.Database = new sqlite.Database(DB_PATH);
+
+const store = new Store({ name: "banshee-electron-config" });
+
+const writeConfig = (key: string, value: any) => {
+  store.set(key, value);
+};
+
+const getConfig = (key: string, defaulyValue: any): any => {
+  return store.get(key, defaulyValue);
+};
 
 const test = async (): Promise<void> => {
   const db = new sqlite.Database(":memory:");
@@ -191,6 +202,8 @@ const ipcRequest = async (channel: string, data: any[]): Promise<any[]> => {
 
 const core: ICore = {
   test,
+  writeConfig,
+  getConfig,
   getPlaylists,
   getTracks,
   calcStatistics,
