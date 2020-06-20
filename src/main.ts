@@ -1,14 +1,19 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+import IPlaylist from "./interfaces/IPlaylist";
+import ITrack from "./interfaces/ITrack";
+import core from "./core/core";
 
+let win: BrowserWindow;
 const createWindow = (): void => {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 1200,
     height: 600,
     webPreferences: {
       nodeIntegration: false,
       nodeIntegrationInWorker: false,
       contextIsolation: true,
+      nativeWindowOpen: true,
       preload: path.join(__dirname, "./core/preLoad.js"),
     },
   });
@@ -32,4 +37,24 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+ipcMain.handle("generate-playlists", (event, args) => {
+  const playlists: IPlaylist[] = args[0];
+  const basePath: string = args[1];
+
+  playlists.forEach(playlist => {
+    core.createPlaylist(playlist, basePath);
+  });
+  return ["OK"];
+});
+
+ipcMain.handle("transfer-tracks", (event, args) => {
+  const tracks: ITrack[] = args[0];
+  const basePath: string = args[1];
+
+  tracks.forEach(track => {
+    core.transferTrack(track, basePath);
+  });
+  return ["OK"];
 });

@@ -5,11 +5,12 @@ import ICore from "./ICore";
 import IPlaylist from "../interfaces/IPlaylist";
 import ITrack from "../interfaces/ITrack";
 import IStatistics from "../interfaces/IStatistics";
-import { writeFileSync } from "fs";
+import { writeFileSync, existsSync, statSync, copyFileSync, mkdirSync } from "fs";
+import { fileURLToPath } from "url";
 import sanitize from "sanitize-filename";
+import { ipcRenderer } from "electron";
 
 const DB_PATH = path.join(os.homedir(), "/.config/banshee-1/banshee.db");
-const SAVE_DIR = path.join(os.homedir(), "work");
 
 const bansheeDB: sqlite.Database = new sqlite.Database(DB_PATH);
 
@@ -136,9 +137,9 @@ const calcStatistics = (statistics: IStatistics, playlists: IPlaylist[]): IStati
   return newStatistics;
 };
 
-const createPlaylist = (playlist: IPlaylist): void => {
+const createPlaylist = (playlist: IPlaylist, basePath: string): void => {
   const m3uText = createPlaylistText(playlist);
-  const savePath = path.join(SAVE_DIR, playlist.name + ".m3u");
+  const savePath = path.join(basePath, playlist.name + ".m3u");
   writeFileSync(savePath, m3uText);
 };
 
@@ -160,12 +161,43 @@ const getRelativePath = (track: ITrack): string => {
   return trackPath;
 };
 
+const transferTrack = (track: ITrack, basePath: string): string => {
+  const relativePath = getRelativePath(track);
+  const absolutePath = path.join(basePath, relativePath);
+  if (!existsSync(path.dirname(absolutePath))) {
+    mkdirSync(path.dirname(absolutePath), { recursive: true });
+  }
+
+  const trackPath = fileURLToPath(track.uri);
+  console.log(trackPath);
+  console.log(statSync(trackPath));
+  if (
+    !existsSync(absolutePath) ||
+    (existsSync(absolutePath) && statSync(absolutePath).mtime < statSync(trackPath).mtime)
+  ) {
+    copyFileSync(trackPath, absolutePath);
+  }
+  return absolutePath;
+};
+
+const isFileExists = (path: string): boolean => {
+  return existsSync(path);
+};
+
+const ipcRequest = async (channel: string, data: any[]): Promise<any[]> => {
+  const result = await ipcRenderer.invoke(channel, data);
+  return result;
+};
+
 const core: ICore = {
   test,
   getPlaylists,
   getTracks,
   calcStatistics,
   createPlaylist,
+  transferTrack,
+  isFileExists,
+  ipcRequest,
 };
 
 export default core;
