@@ -44,11 +44,11 @@ const App: React.FC = () => {
       if (playlist.type + playlist.playlistId === key) {
         // 現在チェックされている = 未チェック状態になる場合
         if (playlist.checked) {
-          return { ...playlist, checked: !playlist.checked, entries: [] };
+          return { ...playlist, checked: false, entries: [] };
         }
 
         const tracks = await window.core.getTracks(playlist.type, playlist.playlistId);
-        return { ...playlist, checked: !playlist.checked, entries: tracks };
+        return { ...playlist, checked: true, entries: tracks };
       }
       return playlist;
     });
@@ -56,7 +56,7 @@ const App: React.FC = () => {
     Promise.all(updated).then(newPlaylists => {
       setPlaylists(newPlaylists);
 
-      const activePlayListsKeys = playlists
+      const activePlayListsKeys = newPlaylists
         .filter(playlist => playlist.checked)
         .map(playlist => {
           return playlist.type + playlist.playlistId;
