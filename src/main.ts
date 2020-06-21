@@ -44,6 +44,7 @@ ipcMain.handle("generate-playlists", (event, args) => {
   const playlists: IPlaylist[] = args[0];
   const basePath: string = args[1];
 
+  core.clearPlaylists(basePath);
   playlists.forEach(playlist => {
     core.createPlaylist(playlist, basePath);
   });

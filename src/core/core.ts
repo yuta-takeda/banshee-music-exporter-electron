@@ -7,7 +7,17 @@ import IPlaylist from "../interfaces/IPlaylist";
 import ITrack from "../interfaces/ITrack";
 import IStatistics from "../interfaces/IStatistics";
 import IRemoteTrack from "../interfaces/IRemoteTrack";
-import { writeFileSync, existsSync, statSync, copyFileSync, mkdirSync, unlinkSync, readdirSync, rmdirSync } from "fs";
+import {
+  writeFileSync,
+  existsSync,
+  statSync,
+  copyFileSync,
+  mkdirSync,
+  unlinkSync,
+  readdirSync,
+  rmdirSync,
+  Dirent,
+} from "fs";
 import { fileURLToPath } from "url";
 import sanitize from "sanitize-filename";
 import { ipcRenderer } from "electron";
@@ -158,18 +168,33 @@ const createPlaylist = (playlist: IPlaylist, basePath: string): void => {
 const createPlaylistText = (playlist: IPlaylist): string => {
   let m3uText = "#EXTM3U\n";
   playlist.entries?.forEach(track => {
-    const sec = Math.ceil(track.duration);
-    m3uText += `#EXINF:${sec},${track.title}\n`;
-    m3uText += getRelativePath(track) + "\n";
+    try {
+      const sec = Math.ceil(track.duration);
+      m3uText += `#EXINF:${sec},${track.title}\n`;
+      m3uText += getRelativePath(track) + "\n";
+    } catch (e) {
+      console.log(track);
+      console.log(e);
+      throw e;
+    }
   });
+
   return m3uText;
+};
+
+const clearPlaylists = (basePath: string): void => {
+  readdirSync(basePath, { withFileTypes: true }).forEach(file => {
+    if (file.isFile() && path.extname(file.name) === ".m3u") {
+      unlinkSync(path.join(basePath, file.name));
+    }
+  });
 };
 
 const getRelativePath = (track: ITrack): string => {
   const trackName = path.basename(track.path);
-  const trackPath = `${sanitize(track.artist, { replacement: "_" })}/${sanitize(track.album, {
-    replacement: "_",
-  })}/${sanitize(trackName, { replacement: "_" })}`;
+  const artist = track.artist ? sanitize(track.artist, { replacement: "_" }) : "不明なアーティスト";
+  const album = track.album ? sanitize(track.album, { replacement: "_" }) : "不明なアルバム";
+  const trackPath = `${artist}/${album}/${sanitize(trackName, { replacement: "_" })}`;
   return trackPath;
 };
 
@@ -223,6 +248,7 @@ const core: ICore = {
   getTracks,
   calcStatistics,
   createPlaylist,
+  clearPlaylists,
   transferTrack,
   removeTracks,
   isFileExists,

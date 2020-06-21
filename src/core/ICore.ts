@@ -12,6 +12,7 @@ export default interface ICore {
   getTracks: (type: string, playlistId: number) => Promise<ITrack[]>;
   calcStatistics: (statistics: IStatistics, playlists: IPlaylist[]) => IStatistics;
   createPlaylist: (playlist: IPlaylist, basePath: string) => void;
+  clearPlaylists: (basePath: string) => void;
   transferTrack: (track: ITrack, basePath: string) => IRemoteTrack;
   removeTracks: (remoteTracks: IRemoteTrack[], uniqTracks: ITrack[]) => void;
   isFileExists: (path: string) => boolean;
