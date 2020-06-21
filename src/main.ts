@@ -3,6 +3,7 @@ import path from "path";
 import IPlaylist from "./interfaces/IPlaylist";
 import ITrack from "./interfaces/ITrack";
 import core from "./core/core";
+import IRemoteTrack from "./interfaces/IRemoteTrack";
 
 let win: BrowserWindow;
 const createWindow = (): void => {
@@ -53,8 +54,17 @@ ipcMain.handle("transfer-tracks", (event, args) => {
   const tracks: ITrack[] = args[0];
   const basePath: string = args[1];
 
-  tracks.forEach(track => {
-    core.transferTrack(track, basePath);
+  const remoteTracks = tracks.map(track => {
+    return core.transferTrack(track, basePath);
   });
+  return [remoteTracks];
+});
+
+ipcMain.handle("remove-tracks", (event, args) => {
+  const remoteTracks: IRemoteTrack[] = args[0];
+  const tracks: ITrack[] = args[1];
+
+  core.removeTracks(remoteTracks, tracks);
+
   return ["OK"];
 });

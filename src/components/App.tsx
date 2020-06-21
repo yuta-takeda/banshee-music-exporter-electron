@@ -5,6 +5,7 @@ import LogBox from "./LogBox";
 import PathBox from "./PathBox";
 import IPlaylist from "../interfaces/IPlaylist";
 import IStatistics from "../interfaces/IStatistics";
+import IRemoteTrack from "../interfaces/IRemoteTrack";
 
 import "../core/ICore";
 
@@ -92,6 +93,15 @@ const App: React.FC = () => {
     const transferTrackPromise = window.core.ipcRequest("transfer-tracks", [statistics.uniqTracks, basePath]);
 
     Promise.all([generatePlaylistPromise, transferTrackPromise]).then(results => {
+      const remoteTracks = window.core.getConfig("remoteTracks", []);
+      window.core.ipcRequest("remove-tracks", [remoteTracks, statistics.uniqTracks]);
+
+      const newRemoteTracks: IRemoteTrack[] = results[1][0];
+      const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
+        return { path: track.path, trackId: track.trackId };
+      });
+      window.core.writeConfig("remoteTracks", toWriteTracks);
+
       alert("楽曲の転送が完了しました！");
     });
   };

@@ -6,7 +6,8 @@ import ICore from "./ICore";
 import IPlaylist from "../interfaces/IPlaylist";
 import ITrack from "../interfaces/ITrack";
 import IStatistics from "../interfaces/IStatistics";
-import { writeFileSync, existsSync, statSync, copyFileSync, mkdirSync } from "fs";
+import IRemoteTrack from "../interfaces/IRemoteTrack";
+import { writeFileSync, existsSync, statSync, copyFileSync, mkdirSync, unlinkSync, readdirSync, rmdirSync } from "fs";
 import { fileURLToPath } from "url";
 import sanitize from "sanitize-filename";
 import { ipcRenderer } from "electron";
@@ -117,7 +118,7 @@ const getTracks = async (type: string, playlistId: number): Promise<ITrack[]> =>
               trackId: row.TrackID,
               artist: row.ArtistName,
               album: row.AlbumTitle,
-              uri: row.Uri,
+              path: fileURLToPath(row.Uri),
               fileSize: row.FileSize,
               title: row.TrackTitle,
               duration: row.Duration,
@@ -165,30 +166,44 @@ const createPlaylistText = (playlist: IPlaylist): string => {
 };
 
 const getRelativePath = (track: ITrack): string => {
-  const trackName = path.basename(decodeURI(track.uri));
+  const trackName = path.basename(track.path);
   const trackPath = `${sanitize(track.artist, { replacement: "_" })}/${sanitize(track.album, {
     replacement: "_",
   })}/${sanitize(trackName, { replacement: "_" })}`;
   return trackPath;
 };
 
-const transferTrack = (track: ITrack, basePath: string): string => {
+const transferTrack = (track: ITrack, basePath: string): IRemoteTrack => {
   const relativePath = getRelativePath(track);
   const absolutePath = path.join(basePath, relativePath);
   if (!existsSync(path.dirname(absolutePath))) {
     mkdirSync(path.dirname(absolutePath), { recursive: true });
   }
 
-  const trackPath = fileURLToPath(track.uri);
-  console.log(trackPath);
-  console.log(statSync(trackPath));
   if (
     !existsSync(absolutePath) ||
-    (existsSync(absolutePath) && statSync(absolutePath).mtime < statSync(trackPath).mtime)
+    (existsSync(absolutePath) && statSync(absolutePath).mtime < statSync(track.path).mtime)
   ) {
-    copyFileSync(trackPath, absolutePath);
+    console.log(`transfer -> ${absolutePath}`);
+    copyFileSync(track.path, absolutePath);
   }
-  return absolutePath;
+  return { path: absolutePath, trackId: track.trackId };
+};
+
+const removeTracks = (remoteTracks: IRemoteTrack[], uniqTracks: ITrack[]) => {
+  const uniqTrackIds = uniqTracks.map(track => track.trackId);
+  const toRemoveTrackIds = remoteTracks.filter(remoteTrack => !uniqTrackIds.includes(remoteTrack.trackId));
+  toRemoveTrackIds.forEach(track => {
+    if (existsSync(track.path)) {
+      console.log(`unlink -> ${track.path}`);
+      unlinkSync(track.path);
+
+      // TODO: 再帰的に行うべき
+      if (readdirSync(path.dirname(track.path)).length === 0) {
+        rmdirSync(path.dirname(track.path));
+      }
+    }
+  });
 };
 
 const isFileExists = (path: string): boolean => {
@@ -209,6 +224,7 @@ const core: ICore = {
   calcStatistics,
   createPlaylist,
   transferTrack,
+  removeTracks,
   isFileExists,
   ipcRequest,
 };
