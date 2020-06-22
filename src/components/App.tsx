@@ -73,7 +73,7 @@ const App: React.FC = () => {
     window.core.writeConfig("saveBasePath", e.currentTarget.value);
   };
 
-  const handleExecButton = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleExecButton = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (!window.core.isFileExists(basePath)) {
       alert("有効なポータブルオーディオのパスを指定してください。");
       return;
@@ -88,22 +88,20 @@ const App: React.FC = () => {
     const result = window.confirm("楽曲の転送を開始します。よろしいですか？");
     if (!result) return;
 
-    const generatePlaylistPromise = window.core.ipcRequest("generate-playlists", [targetPlaylists, basePath]);
+    window.core.ipcRequest("generate-playlists", [targetPlaylists, basePath]);
+    window.core
+      .ipcRequest("transfer-tracks", [statistics.uniqTracks, basePath])
+      .then(async (newRemoteTracks: IRemoteTrack[]) => {
+        const remoteTracks = window.core.getConfig("remoteTracks", []);
+        await window.core.ipcRequest("remove-tracks", [remoteTracks, statistics.uniqTracks]);
 
-    const transferTrackPromise = window.core.ipcRequest("transfer-tracks", [statistics.uniqTracks, basePath]);
+        const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
+          return { path: track.path, trackId: track.trackId };
+        });
+        window.core.writeConfig("remoteTracks", toWriteTracks);
 
-    Promise.all([generatePlaylistPromise, transferTrackPromise]).then(results => {
-      const remoteTracks = window.core.getConfig("remoteTracks", []);
-      window.core.ipcRequest("remove-tracks", [remoteTracks, statistics.uniqTracks]);
-
-      const newRemoteTracks: IRemoteTrack[] = results[1][0];
-      const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
-        return { path: track.path, trackId: track.trackId };
+        alert("楽曲の転送が完了しました！");
       });
-      window.core.writeConfig("remoteTracks", toWriteTracks);
-
-      alert("楽曲の転送が完了しました！");
-    });
   };
 
   return (

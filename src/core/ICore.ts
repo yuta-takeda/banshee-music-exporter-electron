@@ -1,4 +1,3 @@
-import Store from "electron-store";
 import IPlaylist from "../interfaces/IPlaylist";
 import ITrack from "../interfaces/ITrack";
 import IStatistics from "../interfaces/IStatistics";
@@ -13,8 +12,8 @@ export default interface ICore {
   calcStatistics: (statistics: IStatistics, playlists: IPlaylist[]) => IStatistics;
   createPlaylist: (playlist: IPlaylist, basePath: string) => void;
   clearPlaylists: (basePath: string) => void;
-  transferTrack: (track: ITrack, basePath: string) => IRemoteTrack;
-  removeTracks: (remoteTracks: IRemoteTrack[], uniqTracks: ITrack[]) => void;
+  transferTrack: (track: ITrack, basePath: string) => Promise<IRemoteTrack>;
+  removeTracks: (remoteTracks: IRemoteTrack[], uniqTracks: ITrack[]) => Promise<void>;
   isFileExists: (path: string) => boolean;
   ipcRequest: (channel: string, data: any[]) => Promise<any[]>;
 }

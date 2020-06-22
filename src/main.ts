@@ -51,21 +51,21 @@ ipcMain.handle("generate-playlists", (event, args) => {
   return ["OK"];
 });
 
-ipcMain.handle("transfer-tracks", (event, args) => {
+ipcMain.handle("transfer-tracks", async (event, args) => {
   const tracks: ITrack[] = args[0];
   const basePath: string = args[1];
 
   const remoteTracks = tracks.map(track => {
     return core.transferTrack(track, basePath);
   });
-  return [remoteTracks];
+  return Promise.all(remoteTracks).then(results => results);
 });
 
-ipcMain.handle("remove-tracks", (event, args) => {
+ipcMain.handle("remove-tracks", async (event, args) => {
   const remoteTracks: IRemoteTrack[] = args[0];
   const tracks: ITrack[] = args[1];
 
-  core.removeTracks(remoteTracks, tracks);
+  await core.removeTracks(remoteTracks, tracks);
 
   return ["OK"];
 });
