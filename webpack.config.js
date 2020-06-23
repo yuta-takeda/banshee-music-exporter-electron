@@ -39,6 +39,15 @@ module.exports = {
         // TypeScript をコンパイルする
         use: 'ts-loader',
       },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader", "resolve-url-loader"],
+        include: [path.join(__dirname, "src"), /node_modules/],
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|svg|png)$/,
+        loader: "file-loader?name=../font/[name].[ext]",
+      },
     ],
   },
   // 処理対象のファイルを記載する
