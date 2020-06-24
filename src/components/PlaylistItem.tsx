@@ -1,4 +1,5 @@
 import React from "react";
+import { List, Checkbox } from "semantic-ui-react";
 import IPlaylist from "../interfaces/IPlaylist";
 
 interface IProps {
@@ -11,10 +12,13 @@ const PlaylistItem: React.FC<IProps> = props => {
 
   return (
     <div>
-      <p data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
-        <input type="checkbox" checked={playlist.checked} onChange={() => console.log("clicked")} />
-        <span>{playlist.name}</span>
-      </p>
+      <List>
+        <List.Item style={{ margin: "0.5em" }}>
+          <List.Content data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
+            <Checkbox label={playlist.name} checked={playlist.checked} onChange={() => console.log("clicked")} />
+          </List.Content>
+        </List.Item>
+      </List>
     </div>
   );
 };

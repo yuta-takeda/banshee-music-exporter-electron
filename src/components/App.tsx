@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import "semantic-ui-css/semantic.min.css";
+import { Input, Label, Form, Segment } from "semantic-ui-react";
 import Playlist from "./Playlist";
 import MessageBox from "./MessageBox";
 import LogBox from "./LogBox";
@@ -9,12 +11,6 @@ import IStatistics from "../interfaces/IStatistics";
 import IRemoteTrack from "../interfaces/IRemoteTrack";
 
 import "../core/ICore";
-
-const Flexbox = styled.div`
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-`;
 
 const App: React.FC = () => {
   const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
@@ -112,12 +108,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <Flexbox>
+    <Segment basic textAlign={"center"}>
       <PathBox basePath={basePath} handlePathBox={handlePathBox} />
       <Playlist playlists={playlists} handleClick={handleClick} handleExecButton={handleExecButton} />
       <MessageBox tracksCount={statistics.tracksCount} allFileSize={statistics.allFileSize} />
-      <LogBox log={log} />
-    </Flexbox>
+      {/* <LogBox log={log} /> */}
+    </Segment>
   );
 };
 

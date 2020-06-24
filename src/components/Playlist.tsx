@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { Segment, Button, Icon, Label } from "semantic-ui-react";
 import PlaylistItem from "./PlaylistItem";
 import IPlaylist from "../interfaces/IPlaylist";
 import "../core/ICore";
@@ -10,13 +11,8 @@ interface IProps {
   handleExecButton(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
 }
 
-const OverflowBox = styled.div`
-  border: solid 1px #808080;
-  width: 85%;
-  height: 300px;
-  padding: 0.5em;
-  margin: 0.5em 0;
-  overflow: auto;
+const PlaylistBox = styled.div`
+  margin: 1em 0;
 `;
 
 const Playlist: React.FC<IProps> = props => {
@@ -27,10 +23,18 @@ const Playlist: React.FC<IProps> = props => {
   });
 
   return (
-    <div>
-      <OverflowBox>{playlistElements}</OverflowBox>
-      <button onClick={props.handleExecButton}>転送開始</button>
-    </div>
+    <PlaylistBox>
+      <Label pointing="below" style={{ width: "75%" }}>
+        同期したいプレイリストを選択
+      </Label>
+      <Segment textAlign={"left"} style={{ overflow: "auto", height: "250px", margin: "0" }}>
+        {playlistElements}
+      </Segment>
+      <Button icon labelPosition="right" onClick={props.handleExecButton} style={{ width: "50%" }}>
+        同期
+        <Icon name={"sync alternate"} />
+      </Button>
+    </PlaylistBox>
   );
 };
 

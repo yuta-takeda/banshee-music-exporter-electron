@@ -1,5 +1,4 @@
 import React from "react";
-import "semantic-ui-css/semantic.min.css";
 import { Input, Label, Form } from "semantic-ui-react";
 
 interface IProps {
@@ -10,8 +9,10 @@ interface IProps {
 const PathBox: React.FC<IProps> = props => {
   return (
     <Form.Field>
-      <Label pointing="below">ポータブルオーディオパスを入力</Label>
-      <Input value={props.basePath} onChange={props.handlePathBox} />
+      <Label pointing="below" style={{ width: "75%" }}>
+        ポータブルオーディオパスを入力
+      </Label>
+      <Input value={props.basePath} onChange={props.handlePathBox} style={{ width: "100%" }} />
     </Form.Field>
   );
 };

@@ -1,4 +1,5 @@
 import React from "react";
+import { Segment, Button, Icon, Label } from "semantic-ui-react";
 
 interface IProps {
   tracksCount: number;
@@ -19,10 +20,9 @@ const MessageBox: React.FC<IProps> = props => {
   };
 
   return (
-    <div>
-      <p>転送楽曲数：{props.tracksCount}</p>
-      <p>ファイルサイズ：{formatBytes(props.allFileSize)}</p>
-    </div>
+    <Segment>
+      {props.tracksCount} 曲 - {formatBytes(props.allFileSize)}
+    </Segment>
   );
 };
 
