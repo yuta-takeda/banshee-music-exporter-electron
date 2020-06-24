@@ -7,6 +7,8 @@ import "../core/ICore";
 
 interface IProps {
   playlists: IPlaylist[];
+  tracksCount: number;
+  allFileSize: number;
   handleClick(e: React.MouseEvent<HTMLInputElement>): void;
   handleExecButton(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
 }
@@ -22,14 +24,31 @@ const Playlist: React.FC<IProps> = props => {
     );
   });
 
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  };
+
   return (
     <PlaylistBox>
       <Label pointing="below" style={{ width: "75%" }}>
         同期したいプレイリストを選択
       </Label>
-      <Segment textAlign={"left"} style={{ overflow: "auto", height: "250px", margin: "0" }}>
-        {playlistElements}
-      </Segment>
+      <Segment.Group style={{ margin: "0" }}>
+        <Segment textAlign={"left"} style={{ overflow: "auto", height: "250px" }}>
+          {playlistElements}
+        </Segment>
+        <Segment size={"small"} style={{ padding: "7px" }}>
+          {props.tracksCount} 曲 - {formatBytes(props.allFileSize)}
+        </Segment>
+      </Segment.Group>
       <Button icon labelPosition="right" onClick={props.handleExecButton} style={{ width: "50%" }}>
         同期
         <Icon name={"sync alternate"} />

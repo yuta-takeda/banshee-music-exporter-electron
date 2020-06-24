@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import "semantic-ui-css/semantic.min.css";
-import { Input, Label, Form, Segment } from "semantic-ui-react";
+import { Segment } from "semantic-ui-react";
 import Playlist from "./Playlist";
-import MessageBox from "./MessageBox";
 import LogBox from "./LogBox";
 import PathBox from "./PathBox";
 import IPlaylist from "../interfaces/IPlaylist";
@@ -110,8 +108,13 @@ const App: React.FC = () => {
   return (
     <Segment basic textAlign={"center"}>
       <PathBox basePath={basePath} handlePathBox={handlePathBox} />
-      <Playlist playlists={playlists} handleClick={handleClick} handleExecButton={handleExecButton} />
-      <MessageBox tracksCount={statistics.tracksCount} allFileSize={statistics.allFileSize} />
+      <Playlist
+        playlists={playlists}
+        handleClick={handleClick}
+        handleExecButton={handleExecButton}
+        tracksCount={statistics.tracksCount}
+        allFileSize={statistics.allFileSize}
+      />
       {/* <LogBox log={log} /> */}
     </Segment>
   );
