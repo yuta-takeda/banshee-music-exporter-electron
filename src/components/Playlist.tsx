@@ -17,6 +17,15 @@ const PlaylistBox = styled.div`
   margin: 1em 0;
 `;
 
+const SyncSegment = styled(Segment)`
+  padding: 7px !important;
+  background: linear-gradient(#1ec0ff, #1ea0ff) !important;
+  &:hover {
+    background: linear-gradient(#1ed0ff, #1eb0ff) !important;
+    cursor: pointer;
+  }
+`;
+
 const Playlist: React.FC<IProps> = props => {
   const playlistElements = props.playlists.map(playlist => {
     return (
@@ -38,21 +47,18 @@ const Playlist: React.FC<IProps> = props => {
 
   return (
     <PlaylistBox>
-      <Label pointing="below" style={{ width: "75%" }}>
-        同期したいプレイリストを選択
-      </Label>
       <Segment.Group style={{ margin: "0" }}>
-        <Segment textAlign={"left"} style={{ overflow: "auto", height: "250px" }}>
+        <Segment textAlign={"left"} style={{ overflow: "auto", height: "300px" }}>
           {playlistElements}
         </Segment>
         <Segment size={"small"} style={{ padding: "7px" }}>
           {props.tracksCount} 曲 - {formatBytes(props.allFileSize)}
         </Segment>
+        <SyncSegment size={"small"} onClick={props.handleExecButton}>
+          <Icon name={"sync alternate"} />
+          同期
+        </SyncSegment>
       </Segment.Group>
-      <Button icon labelPosition="right" onClick={props.handleExecButton} style={{ width: "50%" }}>
-        同期
-        <Icon name={"sync alternate"} />
-      </Button>
     </PlaylistBox>
   );
 };

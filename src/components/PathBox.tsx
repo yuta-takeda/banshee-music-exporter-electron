@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 import { Input, Label, Form } from "semantic-ui-react";
 
 interface IProps {
@@ -6,13 +7,22 @@ interface IProps {
   handlePathBox: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
+const ColorLabel = styled(Label)`
+  background: #e6fdff !important;
+  border: 1px solid #1ed0df;
+`;
+
 const PathBox: React.FC<IProps> = props => {
   return (
     <Form.Field>
-      <Label pointing="below" style={{ width: "75%" }}>
-        ポータブルオーディオパスを入力
-      </Label>
-      <Input value={props.basePath} onChange={props.handlePathBox} style={{ width: "100%" }} />
+      <Input
+        icon={"mobile alternate"}
+        iconPosition={"left"}
+        placeholder={"ポータブルデバイスのパスを入力してください"}
+        value={props.basePath}
+        onChange={props.handlePathBox}
+        style={{ width: "100%" }}
+      />
     </Form.Field>
   );
 };

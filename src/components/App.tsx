@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import "semantic-ui-css/semantic.min.css";
 import { Segment } from "semantic-ui-react";
 import Playlist from "./Playlist";
@@ -9,6 +10,10 @@ import IStatistics from "../interfaces/IStatistics";
 import IRemoteTrack from "../interfaces/IRemoteTrack";
 
 import "../core/ICore";
+
+const BaseSegment = styled(Segment)`
+  background: #e6e6e6 !important;
+`;
 
 const App: React.FC = () => {
   const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
@@ -106,7 +111,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Segment basic textAlign={"center"}>
+    <BaseSegment basic textAlign={"center"}>
       <PathBox basePath={basePath} handlePathBox={handlePathBox} />
       <Playlist
         playlists={playlists}
@@ -116,7 +121,7 @@ const App: React.FC = () => {
         allFileSize={statistics.allFileSize}
       />
       {/* <LogBox log={log} /> */}
-    </Segment>
+    </BaseSegment>
   );
 };
 
