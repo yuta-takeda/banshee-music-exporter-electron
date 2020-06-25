@@ -5,6 +5,7 @@ interface IPlaylist {
   name: string;
   type: "smart" | "normal";
   checked: boolean;
+  trackCount: number;
   entries?: ITrack[];
 }
 

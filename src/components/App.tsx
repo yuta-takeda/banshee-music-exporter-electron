@@ -13,6 +13,7 @@ import "../core/ICore";
 
 const BaseSegment = styled(Segment)`
   background: #e6e6e6 !important;
+  height: 100%;
 `;
 
 const App: React.FC = () => {

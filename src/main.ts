@@ -8,8 +8,8 @@ import IRemoteTrack from "./interfaces/IRemoteTrack";
 let win: BrowserWindow;
 const createWindow = (): void => {
   win = new BrowserWindow({
-    width: 1200,
-    height: 600,
+    width: 350,
+    height: 500,
     webPreferences: {
       nodeIntegration: false,
       nodeIntegrationInWorker: false,

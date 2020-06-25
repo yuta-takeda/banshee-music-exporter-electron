@@ -48,7 +48,7 @@ const Playlist: React.FC<IProps> = props => {
   return (
     <PlaylistBox>
       <Segment.Group style={{ margin: "0" }}>
-        <Segment textAlign={"left"} style={{ overflow: "auto", height: "300px" }}>
+        <Segment textAlign={"left"} style={{ overflow: "auto", height: "310px" }}>
           {playlistElements}
         </Segment>
         <Segment size={"small"} style={{ padding: "7px" }}>

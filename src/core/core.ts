@@ -36,10 +36,16 @@ const test = async (): Promise<void> => {
 const getNormalPlaylists = async (): Promise<IPlaylist[]> => {
   return new Promise(resolve => {
     bansheeDB.serialize(() => {
-      bansheeDB.all("SELECT PlaylistID, Name from CorePlaylists", (err, rows) => {
+      bansheeDB.all("SELECT PlaylistID, Name, CachedCount from CorePlaylists", (err, rows) => {
         if (err) throw err;
         const playlists: IPlaylist[] = rows.map(row => {
-          return { playlistId: row.PlaylistID, name: row.Name, type: "normal", checked: false };
+          return {
+            playlistId: row.PlaylistID,
+            name: row.Name,
+            type: "normal",
+            checked: false,
+            trackCount: row.CachedCount,
+          };
         });
         resolve(playlists);
       });
@@ -50,10 +56,16 @@ const getNormalPlaylists = async (): Promise<IPlaylist[]> => {
 const getSmartPlaylists = async (): Promise<IPlaylist[]> => {
   return new Promise(resolve => {
     bansheeDB.serialize(() => {
-      bansheeDB.all("SELECT SmartPlaylistID, Name from CoreSmartPlaylists", (err, rows) => {
+      bansheeDB.all("SELECT SmartPlaylistID, Name, CachedCount from CoreSmartPlaylists", (err, rows) => {
         if (err) throw err;
         const playlists: IPlaylist[] = rows.map(row => {
-          return { playlistId: row.SmartPlaylistID, name: row.Name, type: "smart", checked: false };
+          return {
+            playlistId: row.SmartPlaylistID,
+            name: row.Name,
+            type: "smart",
+            checked: false,
+            trackCount: row.CachedCount,
+          };
         });
         resolve(playlists);
       });

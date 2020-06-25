@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 import { List, Checkbox } from "semantic-ui-react";
 import IPlaylist from "../interfaces/IPlaylist";
 
@@ -7,6 +8,16 @@ interface IProps {
   handleClick(e: React.MouseEvent<HTMLInputElement>): void;
 }
 
+const FlexListContent = styled(List.Content)`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const TrackCount = styled.span`
+  color: #b8cacc;
+  font-size: small;
+`;
+
 const PlaylistItem: React.FC<IProps> = props => {
   const playlist = props.playlist;
 
@@ -14,9 +25,10 @@ const PlaylistItem: React.FC<IProps> = props => {
     <div>
       <List>
         <List.Item style={{ margin: "0.5em" }}>
-          <List.Content data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
+          <FlexListContent data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
             <Checkbox label={playlist.name} checked={playlist.checked} onChange={() => console.log("clicked")} />
-          </List.Content>
+            <TrackCount>{playlist.trackCount} 曲</TrackCount>
+          </FlexListContent>
         </List.Item>
       </List>
     </div>
