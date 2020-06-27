@@ -2,8 +2,10 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import IPlaylist from "./interfaces/IPlaylist";
 import ITrack from "./interfaces/ITrack";
-import core from "./core/core";
 import IRemoteTrack from "./interfaces/IRemoteTrack";
+
+import playlistFile from "./core/playlistFile";
+import trackFile from "./core/trackFile";
 
 let win: BrowserWindow;
 const createWindow = (): void => {
@@ -44,9 +46,9 @@ ipcMain.handle("generate-playlists", (event, args) => {
   const playlists: IPlaylist[] = args[0];
   const basePath: string = args[1];
 
-  core.clearPlaylists(basePath);
+  playlistFile.clearAll(basePath);
   playlists.forEach(playlist => {
-    core.createPlaylist(playlist, basePath);
+    playlistFile.create(playlist, basePath);
   });
   return ["OK"];
 });
@@ -56,7 +58,7 @@ ipcMain.handle("transfer-tracks", async (event, args) => {
   const basePath: string = args[1];
 
   const remoteTracks = tracks.map(track => {
-    return core.transferTrack(track, basePath);
+    return trackFile.transfer(track, basePath);
   });
   return Promise.all(remoteTracks).then(results => results);
 });
@@ -65,7 +67,7 @@ ipcMain.handle("remove-tracks", async (event, args) => {
   const remoteTracks: IRemoteTrack[] = args[0];
   const tracks: ITrack[] = args[1];
 
-  await core.removeTracks(remoteTracks, tracks);
+  await trackFile.removeFromRemote(remoteTracks, tracks);
 
   return ["OK"];
 });

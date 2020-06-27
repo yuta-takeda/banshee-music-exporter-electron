@@ -9,7 +9,12 @@ import IPlaylist from "../interfaces/IPlaylist";
 import IStatistics from "../interfaces/IStatistics";
 import IRemoteTrack from "../interfaces/IRemoteTrack";
 
-import "../core/ICore";
+import "../core/IConfig";
+import "../core/IIpc";
+import "../core/IPlaylistFile";
+import "../core/ISql";
+import "../core/ITrackFile";
+import "../core/ITrackStatistic";
 
 const BaseSegment = styled(Segment)`
   background: #e6e6e6 !important;
@@ -23,11 +28,11 @@ const App: React.FC = () => {
   const [statistics, setStatistics] = useState<IStatistics>({ tracksCount: 0, allFileSize: 0, uniqTracks: [] });
 
   useEffect(() => {
-    const activePlaylists: string[] = window.core.getConfig("activePlayLists", []);
-    window.core.getPlaylists().then(playlists => {
+    const activePlaylists: string[] = window.config.read("activePlayLists", []);
+    window.sql.getPlaylists().then(playlists => {
       const checkedPlaylistsPromise = playlists.map(async playlist => {
         if (activePlaylists.includes(playlist.type + playlist.playlistId)) {
-          const tracks = await window.core.getTracks(playlist.type, playlist.playlistId);
+          const tracks = await window.sql.getTracks(playlist.type, playlist.playlistId);
           return { ...playlist, checked: true, entries: tracks };
         } else {
           return playlist;
@@ -36,11 +41,11 @@ const App: React.FC = () => {
       Promise.all(checkedPlaylistsPromise).then(newPlaylists => {
         setPlaylists(newPlaylists);
 
-        const newStatistics = window.core.calcStatistics(statistics, newPlaylists);
+        const newStatistics = window.trackStatistic.calc(statistics, newPlaylists);
         setStatistics(newStatistics);
       });
     });
-    const saveBasePath = window.core.getConfig("saveBasePath", "");
+    const saveBasePath = window.config.read("saveBasePath", "");
     setBasePath(saveBasePath);
   }, []);
 
@@ -54,7 +59,7 @@ const App: React.FC = () => {
           return { ...playlist, checked: false, entries: [] };
         }
 
-        const tracks = await window.core.getTracks(playlist.type, playlist.playlistId);
+        const tracks = await window.sql.getTracks(playlist.type, playlist.playlistId);
         return { ...playlist, checked: true, entries: tracks };
       }
       return playlist;
@@ -68,20 +73,20 @@ const App: React.FC = () => {
         .map(playlist => {
           return playlist.type + playlist.playlistId;
         });
-      window.core.writeConfig("activePlayLists", activePlayListsKeys);
+      window.config.write("activePlayLists", activePlayListsKeys);
 
-      const newStatistics = window.core.calcStatistics(statistics, newPlaylists);
+      const newStatistics = window.trackStatistic.calc(statistics, newPlaylists);
       setStatistics(newStatistics);
     });
   };
 
   const handlePathBox = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBasePath(e.currentTarget.value);
-    window.core.writeConfig("saveBasePath", e.currentTarget.value);
+    window.config.write("saveBasePath", e.currentTarget.value);
   };
 
   const handleExecButton = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if (!window.core.isFileExists(basePath)) {
+    if (!window.trackFile.exists(basePath)) {
       alert("有効なポータブルオーディオのパスを指定してください。");
       return;
     }
@@ -95,17 +100,17 @@ const App: React.FC = () => {
     const result = window.confirm("楽曲の転送を開始します。よろしいですか？");
     if (!result) return;
 
-    window.core.ipcRequest("generate-playlists", [targetPlaylists, basePath]);
-    window.core
-      .ipcRequest("transfer-tracks", [statistics.uniqTracks, basePath])
+    window.ipc.request("generate-playlists", [targetPlaylists, basePath]);
+    window.ipc
+      .request("transfer-tracks", [statistics.uniqTracks, basePath])
       .then(async (newRemoteTracks: IRemoteTrack[]) => {
-        const remoteTracks = window.core.getConfig("remoteTracks", []);
-        await window.core.ipcRequest("remove-tracks", [remoteTracks, statistics.uniqTracks]);
+        const remoteTracks = window.config.read("remoteTracks", []);
+        await window.ipc.request("remove-tracks", [remoteTracks, statistics.uniqTracks]);
 
         const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
           return { path: track.path, trackId: track.trackId };
         });
-        window.core.writeConfig("remoteTracks", toWriteTracks);
+        window.config.write("remoteTracks", toWriteTracks);
 
         alert("楽曲の転送が完了しました！");
       });

@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { Segment, Button, Icon, Label } from "semantic-ui-react";
 import PlaylistItem from "./PlaylistItem";
 import IPlaylist from "../interfaces/IPlaylist";
-import "../core/ICore";
 
 interface IProps {
   playlists: IPlaylist[];
