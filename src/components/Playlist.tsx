@@ -17,9 +17,17 @@ const PlaylistBox = styled.div`
   margin: 1em 0;
 `;
 
+const RotateIcon = styled(Icon)`
+  transition: all 0.5s linear;
+  transform: rotateZ(0deg);
+`;
+
 const SyncSegment = styled(Segment)`
   padding: 7px !important;
   background: linear-gradient(#1ec0ff, #1ea0ff) !important;
+  &:hover ${RotateIcon} {
+    transform: rotateZ(360deg);
+  }
   &:hover {
     background: linear-gradient(#1ed0ff, #1eb0ff) !important;
     cursor: pointer;
@@ -55,7 +63,7 @@ const Playlist: React.FC<IProps> = props => {
           {props.tracksCount} 曲 - {formatBytes(props.allFileSize)}
         </Segment>
         <SyncSegment size={"small"} onClick={props.handleExecButton}>
-          <Icon name={"sync alternate"} />
+          <RotateIcon name={"sync alternate"} />
           同期
         </SyncSegment>
       </Segment.Group>
