@@ -7,18 +7,13 @@ interface IProps {
   handlePathBox: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const ColorLabel = styled(Label)`
-  background: #e6fdff !important;
-  border: 1px solid #1ed0df;
-`;
-
 const PathBox: React.FC<IProps> = props => {
   return (
     <Form.Field>
       <Input
         icon={"mobile alternate"}
         iconPosition={"left"}
-        placeholder={"ポータブルデバイスのパスを入力してください"}
+        placeholder={"Input your portable device path"}
         value={props.basePath}
         onChange={props.handlePathBox}
         style={{ width: "100%" }}

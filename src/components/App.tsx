@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import "semantic-ui-css/semantic.min.css";
 import { Segment } from "semantic-ui-react";
@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
   const [log, setLog] = useState<string[]>([]);
   const [basePath, setBasePath] = useState<string>("");
+  const [syncing, setSyncing] = useState<boolean>(false);
   const [statistics, setStatistics] = useState<IStatistics>({ tracksCount: 0, allFileSize: 0, uniqTracks: [] });
 
   useEffect(() => {
@@ -49,72 +50,95 @@ const App: React.FC = () => {
     setBasePath(saveBasePath);
   }, []);
 
-  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    const key = e.currentTarget.dataset.key;
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLInputElement>) => {
+      const key = e.currentTarget.dataset.key;
 
-    const updated = playlists.map(async playlist => {
-      if (playlist.type + playlist.playlistId === key) {
-        // 現在チェックされている = 未チェック状態になる場合
-        if (playlist.checked) {
-          return { ...playlist, checked: false, entries: [] };
+      const updated = playlists.map(async playlist => {
+        if (playlist.type + playlist.playlistId === key) {
+          // 現在チェックされている = 未チェック状態になる場合
+          if (playlist.checked) {
+            return { ...playlist, checked: false, entries: [] };
+          }
+
+          const tracks = await window.sql.getTracks(playlist.type, playlist.playlistId);
+          return { ...playlist, checked: true, entries: tracks };
         }
+        return playlist;
+      });
 
-        const tracks = await window.sql.getTracks(playlist.type, playlist.playlistId);
-        return { ...playlist, checked: true, entries: tracks };
+      Promise.all(updated).then(newPlaylists => {
+        setPlaylists(newPlaylists);
+
+        const activePlayListsKeys = newPlaylists
+          .filter(playlist => playlist.checked)
+          .map(playlist => {
+            return playlist.type + playlist.playlistId;
+          });
+        window.config.write("activePlayLists", activePlayListsKeys);
+
+        const newStatistics = window.trackStatistic.calc(statistics, newPlaylists);
+        setStatistics(newStatistics);
+      });
+    },
+    [playlists],
+  );
+
+  const handlePathBox = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setBasePath(e.currentTarget.value);
+      window.config.write("saveBasePath", e.currentTarget.value);
+    },
+    [basePath],
+  );
+
+  const handleExecButton = useCallback(
+    async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      if (!window.trackFile.exists(basePath)) {
+        alert("有効なポータブルオーディオのパスを指定してください。");
+        return;
       }
-      return playlist;
-    });
 
-    Promise.all(updated).then(newPlaylists => {
-      setPlaylists(newPlaylists);
+      const targetPlaylists = playlists.filter(playlist => playlist.checked);
+      if (targetPlaylists.length === 0) {
+        alert("プレイリストを選択してください。");
+        return;
+      }
 
-      const activePlayListsKeys = newPlaylists
-        .filter(playlist => playlist.checked)
-        .map(playlist => {
-          return playlist.type + playlist.playlistId;
-        });
-      window.config.write("activePlayLists", activePlayListsKeys);
+      const result = window.confirm("楽曲の転送を開始します。よろしいですか？");
+      if (!result) return;
 
-      const newStatistics = window.trackStatistic.calc(statistics, newPlaylists);
-      setStatistics(newStatistics);
-    });
-  };
+      setSyncing(true);
 
-  const handlePathBox = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBasePath(e.currentTarget.value);
-    window.config.write("saveBasePath", e.currentTarget.value);
-  };
+      window.api.send("generate-playlists", [targetPlaylists, basePath]);
 
-  const handleExecButton = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if (!window.trackFile.exists(basePath)) {
-      alert("有効なポータブルオーディオのパスを指定してください。");
-      return;
-    }
+      window.api.on("generate-playlists", (event, arg) => {
+        setLog(log => [...log, "プレイリストの生成が完了しました"]);
+        window.api.send("transfer-tracks", [statistics.uniqTracks, basePath]);
+      });
 
-    const targetPlaylists = playlists.filter(playlist => playlist.checked);
-    if (targetPlaylists.length === 0) {
-      alert("プレイリストを選択してください。");
-      return;
-    }
+      window.api.on("transfer-track", (event, track: IRemoteTrack, progress: string) => {
+        if (track.skip) {
+          setLog(log => [...log, `[ ${progress} ] skip: ${track.artist} - ${track.title}`]);
+        } else {
+          setLog(log => [...log, `[ ${progress} ] transfered: ${track.artist} - ${track.title}`]);
+        }
+      });
 
-    const result = window.confirm("楽曲の転送を開始します。よろしいですか？");
-    if (!result) return;
-
-    window.ipc.request("generate-playlists", [targetPlaylists, basePath]);
-    window.ipc
-      .request("transfer-tracks", [statistics.uniqTracks, basePath])
-      .then(async (newRemoteTracks: IRemoteTrack[]) => {
+      window.ipc.test("transfer-tracks-all", async (event, newRemoteTracks: IRemoteTrack[]) => {
         const remoteTracks = window.config.read("remoteTracks", []);
         await window.ipc.request("remove-tracks", [remoteTracks, statistics.uniqTracks]);
-
         const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
-          return { path: track.path, trackId: track.trackId };
+          return { path: track.path, trackId: track.trackId, skip: track.skip };
         });
         window.config.write("remoteTracks", toWriteTracks);
 
+        setSyncing(false);
         alert("楽曲の転送が完了しました！");
       });
-  };
+    },
+    [basePath, playlists, statistics],
+  );
 
   return (
     <BaseSegment basic textAlign={"center"}>
@@ -125,8 +149,9 @@ const App: React.FC = () => {
         handleExecButton={handleExecButton}
         tracksCount={statistics.tracksCount}
         allFileSize={statistics.allFileSize}
+        syncing={syncing}
       />
-      {/* <LogBox log={log} /> */}
+      <LogBox log={log} />
     </BaseSegment>
   );
 };

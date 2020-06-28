@@ -6,15 +6,16 @@ import IRemoteTrack from "./interfaces/IRemoteTrack";
 
 import playlistFile from "./core/playlistFile";
 import trackFile from "./core/trackFile";
+import ipc from "./core/ipc";
 
 let win: BrowserWindow;
 const createWindow = (): void => {
   win = new BrowserWindow({
-    width: 350,
+    width: 500,
     height: 500,
     webPreferences: {
-      nodeIntegration: false,
-      nodeIntegrationInWorker: false,
+      nodeIntegration: true,
+      nodeIntegrationInWorker: true,
       contextIsolation: true,
       nativeWindowOpen: true,
       preload: path.join(__dirname, "./core/preLoad.js"),
@@ -42,7 +43,7 @@ app.on("activate", () => {
   }
 });
 
-ipcMain.handle("generate-playlists", (event, args) => {
+ipcMain.on("generate-playlists", (event, args) => {
   const playlists: IPlaylist[] = args[0];
   const basePath: string = args[1];
 
@@ -50,17 +51,34 @@ ipcMain.handle("generate-playlists", (event, args) => {
   playlists.forEach(playlist => {
     playlistFile.create(playlist, basePath);
   });
-  return ["OK"];
+
+  event.reply("generate-playlists", "プレイリストの作成が完了しました");
 });
 
-ipcMain.handle("transfer-tracks", async (event, args) => {
+// ipcMain.handle("transfer-tracks", async (event, args) => {
+//   const tracks: ITrack[] = args[0];
+//   const basePath: string = args[1];
+
+//   const remoteTracks = tracks.map(track => {
+//     return trackFile.transfer(track, basePath);
+//   });
+//   return Promise.all(remoteTracks).then(results => results);
+// });
+
+ipcMain.on("transfer-tracks", (event, args) => {
   const tracks: ITrack[] = args[0];
   const basePath: string = args[1];
 
-  const remoteTracks = tracks.map(track => {
-    return trackFile.transfer(track, basePath);
+  const tracksCount = tracks.length;
+  const remoteTracks = tracks.map(async (track, idx) => {
+    const result = await trackFile.transfer(track, basePath);
+    const progress = `${idx + 1} / ${tracksCount}`;
+    event.reply("transfer-track", track, progress);
+    return result;
   });
-  return Promise.all(remoteTracks).then(results => results);
+  Promise.all(remoteTracks).then(results => {
+    event.reply("transfer-tracks-all", results);
+  });
 });
 
 ipcMain.handle("remove-tracks", async (event, args) => {

@@ -18,16 +18,18 @@ const transfer = async (track: ITrack, basePath: string): Promise<IRemoteTrack> 
   if (!remoteTrackExists) {
     console.log(`transfer -> ${absolutePath}`);
     await util.promisify(fs.copyFile)(track.path, absolutePath);
+    return { path: absolutePath, trackId: track.trackId, skip: false, artist: track.artist, title: track.title };
   } else {
     const remoteTrackStat = await util.promisify(fs.stat)(absolutePath);
     const localTrackStat = await util.promisify(fs.stat)(track.path);
     if (remoteTrackStat.mtime < localTrackStat.mtime) {
       console.log(`transfer -> ${absolutePath}`);
       await util.promisify(fs.copyFile)(track.path, absolutePath);
+      return { path: absolutePath, trackId: track.trackId, skip: false, artist: track.artist, title: track.title };
     }
   }
 
-  return { path: absolutePath, trackId: track.trackId };
+  return { path: absolutePath, trackId: track.trackId, skip: true, artist: track.artist, title: track.title };
 };
 
 const removeFromRemote = async (remoteTracks: IRemoteTrack[], uniqTracks: ITrack[]): Promise<void> => {

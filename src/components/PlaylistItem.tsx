@@ -27,7 +27,7 @@ const PlaylistItem: React.FC<IProps> = props => {
         <List.Item style={{ margin: "0.5em" }}>
           <FlexListContent data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
             <Checkbox label={playlist.name} checked={playlist.checked} onChange={() => console.log("clicked")} />
-            <TrackCount>{playlist.trackCount} 曲</TrackCount>
+            <TrackCount>{playlist.trackCount} songs</TrackCount>
           </FlexListContent>
         </List.Item>
       </List>
