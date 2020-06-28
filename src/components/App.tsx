@@ -10,7 +10,6 @@ import IStatistics from "../interfaces/IStatistics";
 import IRemoteTrack from "../interfaces/IRemoteTrack";
 
 import "../core/IConfig";
-import "../core/IIpc";
 import "../core/IPlaylistFile";
 import "../core/ISql";
 import "../core/ITrackFile";

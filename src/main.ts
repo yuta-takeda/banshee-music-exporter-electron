@@ -6,13 +6,12 @@ import IRemoteTrack from "./interfaces/IRemoteTrack";
 
 import playlistFile from "./core/playlistFile";
 import trackFile from "./core/trackFile";
-import ipc from "./core/ipc";
 
 let win: BrowserWindow;
 const createWindow = (): void => {
   win = new BrowserWindow({
     width: 500,
-    height: 500,
+    height: 475,
     webPreferences: {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
@@ -23,7 +22,7 @@ const createWindow = (): void => {
   });
 
   win.loadFile("./index.html");
-
+  win.removeMenu();
   win.webContents.openDevTools();
 };
 
