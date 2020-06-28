@@ -50,20 +50,11 @@ ipcMain.on("generate-playlists", (event, args) => {
   playlistFile.clearAll(basePath);
   playlists.forEach(playlist => {
     playlistFile.create(playlist, basePath);
+    event.reply("generate-playlist", playlist);
   });
 
-  event.reply("generate-playlists", "プレイリストの作成が完了しました");
+  event.reply("generate-playlists-all", "プレイリストの作成が完了しました");
 });
-
-// ipcMain.handle("transfer-tracks", async (event, args) => {
-//   const tracks: ITrack[] = args[0];
-//   const basePath: string = args[1];
-
-//   const remoteTracks = tracks.map(track => {
-//     return trackFile.transfer(track, basePath);
-//   });
-//   return Promise.all(remoteTracks).then(results => results);
-// });
 
 ipcMain.on("transfer-tracks", (event, args) => {
   const tracks: ITrack[] = args[0];
@@ -73,7 +64,7 @@ ipcMain.on("transfer-tracks", (event, args) => {
   const remoteTracks = tracks.map(async (track, idx) => {
     const result = await trackFile.transfer(track, basePath);
     const progress = `${idx + 1} / ${tracksCount}`;
-    event.reply("transfer-track", track, progress);
+    event.reply("transfer-track", result, progress);
     return result;
   });
   Promise.all(remoteTracks).then(results => {
@@ -81,11 +72,11 @@ ipcMain.on("transfer-tracks", (event, args) => {
   });
 });
 
-ipcMain.handle("remove-tracks", async (event, args) => {
+ipcMain.on("remove-tracks", (event, args) => {
   const remoteTracks: IRemoteTrack[] = args[0];
   const tracks: ITrack[] = args[1];
 
-  await trackFile.removeFromRemote(remoteTracks, tracks);
-
-  return ["OK"];
-});
+  trackFile.removeFromRemote(remoteTracks, tracks).then(() => {
+    event.reply("remove-tracks", "同期対象外の楽曲ファイルを削除しました");
+  });
+})

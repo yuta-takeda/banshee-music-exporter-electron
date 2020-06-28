@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [basePath, setBasePath] = useState<string>("");
   const [syncing, setSyncing] = useState<boolean>(false);
   const [statistics, setStatistics] = useState<IStatistics>({ tracksCount: 0, allFileSize: 0, uniqTracks: [] });
+  const [newRemoteTracks, setNewRemoteTracks] = useState<IRemoteTrack[]>([]);
 
   useEffect(() => {
     const activePlaylists: string[] = window.config.read("activePlayLists", []);
@@ -112,7 +113,11 @@ const App: React.FC = () => {
 
       window.api.send("generate-playlists", [targetPlaylists, basePath]);
 
-      window.api.on("generate-playlists", (event, arg) => {
+      window.api.on("generate-playlist", (event, playlist: IPlaylist) => {
+        setLog(log => [...log, `プレイリスト：${playlist.name}を作成しました`]);
+      });
+
+      window.api.on("generate-playlists-all", (event, arg) => {
         setLog(log => [...log, "プレイリストの生成が完了しました"]);
         window.api.send("transfer-tracks", [statistics.uniqTracks, basePath]);
       });
@@ -121,13 +126,19 @@ const App: React.FC = () => {
         if (track.skip) {
           setLog(log => [...log, `[ ${progress} ] skip: ${track.artist} - ${track.title}`]);
         } else {
-          setLog(log => [...log, `[ ${progress} ] transfered: ${track.artist} - ${track.title}`]);
+          setLog(log => [...log, `[ ${progress} ] copy: ${track.artist} - ${track.title}`]);
         }
       });
 
-      window.ipc.test("transfer-tracks-all", async (event, newRemoteTracks: IRemoteTrack[]) => {
+      window.api.on("transfer-tracks-all", (event, newRemoteTracks: IRemoteTrack[]) => {
+        setLog(log => [...log, "楽曲の転送が完了しました"]);
         const remoteTracks = window.config.read("remoteTracks", []);
-        await window.ipc.request("remove-tracks", [remoteTracks, statistics.uniqTracks]);
+        setNewRemoteTracks(newRemoteTracks);
+        window.api.send("remove-tracks", [remoteTracks, statistics.uniqTracks]);
+      });
+
+      window.api.on("remove-tracks", (event, msg: string) => {
+        setLog(log => [...log, msg]);
         const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
           return { path: track.path, trackId: track.trackId, skip: track.skip };
         });
@@ -137,7 +148,7 @@ const App: React.FC = () => {
         alert("楽曲の転送が完了しました！");
       });
     },
-    [basePath, playlists, statistics],
+    [basePath, playlists, statistics, newRemoteTracks],
   );
 
   return (
