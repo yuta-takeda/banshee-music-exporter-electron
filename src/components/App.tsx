@@ -28,6 +28,7 @@ const App: React.FC = () => {
   const [syncing, setSyncing] = useState<boolean>(false);
   const [statistics, setStatistics] = useState<IStatistics>({ tracksCount: 0, allFileSize: 0, uniqTracks: [] });
   const [newRemoteTracks, setNewRemoteTracks] = useState<IRemoteTrack[]>([]);
+  const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
     const activePlaylists: string[] = window.config.read("activePlayLists", []);
@@ -45,11 +46,24 @@ const App: React.FC = () => {
 
         const newStatistics = window.trackStatistic.calc(statistics, newPlaylists);
         setStatistics(newStatistics);
+        setMessage(`${newStatistics.tracksCount} songs - ${formatBytes(newStatistics.allFileSize)}`);
       });
     });
     const saveBasePath = window.config.read("saveBasePath", "");
     setBasePath(saveBasePath);
   }, []);
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  };
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLInputElement>) => {
@@ -80,6 +94,7 @@ const App: React.FC = () => {
 
         const newStatistics = window.trackStatistic.calc(statistics, newPlaylists);
         setStatistics(newStatistics);
+        setMessage(`${newStatistics.tracksCount} songs - ${formatBytes(newStatistics.allFileSize)}`);
       });
     },
     [playlists],
@@ -114,37 +129,40 @@ const App: React.FC = () => {
       window.api.send("generate-playlists", [targetPlaylists, basePath]);
 
       window.api.on("generate-playlist", (event, playlist: IPlaylist) => {
-        setLog(log => [...log, `プレイリスト：${playlist.name}を作成しました`]);
+        // setLog(log => [...log, `プレイリスト：${playlist.name}を作成しました`]);
       });
 
       window.api.on("generate-playlists-all", (event, arg) => {
-        setLog(log => [...log, "プレイリストの生成が完了しました"]);
+        // setLog(log => [...log, "プレイリストの生成が完了しました"]);
         window.api.send("transfer-tracks", [statistics.uniqTracks, basePath]);
       });
 
       window.api.on("transfer-track", (event, track: IRemoteTrack, progress: string) => {
         if (track.skip) {
-          setLog(log => [...log, `[ ${progress} ] skip: ${track.artist} - ${track.title}`]);
+          setMessage(() => `[ ${progress} ] skip: ${track.artist} - ${track.title}`);
+          // setLog(log => [...log, `[ ${progress} ] skip: ${track.artist} - ${track.title}`]);
         } else {
-          setLog(log => [...log, `[ ${progress} ] copy: ${track.artist} - ${track.title}`]);
+          setMessage(() => `[ ${progress} ] copy: ${track.artist} - ${track.title}`);
+          // setLog(log => [...log, `[ ${progress} ] copy: ${track.artist} - ${track.title}`]);
         }
       });
 
       window.api.on("transfer-tracks-all", (event, newRemoteTracks: IRemoteTrack[]) => {
-        setLog(log => [...log, "楽曲の転送が完了しました"]);
+        // setLog(log => [...log, "楽曲の転送が完了しました"]);
         const remoteTracks = window.config.read("remoteTracks", []);
         setNewRemoteTracks(newRemoteTracks);
         window.api.send("remove-tracks", [remoteTracks, statistics.uniqTracks]);
       });
 
       window.api.on("remove-tracks", (event, msg: string) => {
-        setLog(log => [...log, msg]);
+        // setLog(log => [...log, msg]);
         const toWriteTracks = newRemoteTracks.map<IRemoteTrack>(track => {
           return { path: track.path, trackId: track.trackId, skip: track.skip };
         });
         window.config.write("remoteTracks", toWriteTracks);
 
         setSyncing(false);
+        setMessage(`${statistics.tracksCount} songs - ${formatBytes(statistics.allFileSize)}`);
         alert("楽曲の転送が完了しました！");
       });
     },
@@ -161,8 +179,9 @@ const App: React.FC = () => {
         tracksCount={statistics.tracksCount}
         allFileSize={statistics.allFileSize}
         syncing={syncing}
+        msg={message}
       />
-      <LogBox log={log} />
+      {/* <LogBox log={log} /> */}
     </BaseSegment>
   );
 };

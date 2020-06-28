@@ -11,6 +11,7 @@ interface IProps {
   handleClick(e: React.MouseEvent<HTMLInputElement>): void;
   handleExecButton(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
   syncing: boolean;
+  msg: string;
 }
 
 const PlaylistBox = styled.div`
@@ -49,7 +50,16 @@ const DisabledSyncSegment = styled(Segment)`
     background-size: 400% 400%;
     background-position: 50% 50%;
     animation: ${syncGradation} 2.5s ease 100;
-  }handleExecButton
+  }
+`;
+
+const MessageBox = styled(Segment)`
+  &&& {
+    padding: 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;
 
 const Playlist: React.FC<IProps> = props => {
@@ -77,9 +87,10 @@ const Playlist: React.FC<IProps> = props => {
         <Segment textAlign={"left"} style={{ overflow: "auto", height: "310px" }}>
           {playlistElements}
         </Segment>
-        <Segment size={"small"} style={{ padding: "7px" }}>
-          {props.tracksCount} songs - {formatBytes(props.allFileSize)}
-        </Segment>
+        <MessageBox size={"small"}>
+          {/* {props.tracksCount} songs - {formatBytes(props.allFileSize)} */}
+          {props.msg}
+        </MessageBox>
         {/* <SyncButton syncing={props.syncing} handleExecButton={props.handleExecButton} /> */}
         {(() => {
           if (props.syncing) {
