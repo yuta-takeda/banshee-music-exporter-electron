@@ -129,10 +129,12 @@ const App: React.FC = () => {
 
       window.api.on("generate-playlist", (event, playlist: IPlaylist) => {
         // setLog(log => [...log, `プレイリスト：${playlist.name}を作成しました`]);
+        setMessage(() => `プレイリスト：${playlist.name}を作成しました`);
       });
 
       window.api.on("generate-playlists-all", (event, arg) => {
         // setLog(log => [...log, "プレイリストの生成が完了しました"]);
+        setMessage(() => "プレイリストの生成が完了しました");
         window.api.send("transfer-tracks", [statistics.uniqTracks, basePath]);
       });
 
@@ -148,6 +150,7 @@ const App: React.FC = () => {
 
       window.api.on("transfer-tracks-all", (event, newRemoteTracks: IRemoteTrack[]) => {
         // setLog(log => [...log, "楽曲の転送が完了しました"]);
+        setMessage(() => "楽曲の転送が完了しました");
         const remoteTracks = window.config.read("remoteTracks", []);
         setNewRemoteTracks(newRemoteTracks);
         window.api.send("remove-tracks", [remoteTracks, statistics.uniqTracks]);
