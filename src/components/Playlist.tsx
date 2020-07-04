@@ -1,6 +1,6 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { Segment, Button, Icon, Label } from "semantic-ui-react";
+import { Segment, Icon } from "semantic-ui-react";
 import PlaylistItem from "./PlaylistItem";
 import IPlaylist from "../interfaces/IPlaylist";
 
@@ -79,11 +79,7 @@ const Playlist: React.FC<IProps> = props => {
         <Segment textAlign={"left"} style={{ overflow: "auto", height: "310px" }}>
           {playlistElements}
         </Segment>
-        <MessageBox size={"small"}>
-          {/* {props.tracksCount} songs - {formatBytes(props.allFileSize)} */}
-          {props.message}
-        </MessageBox>
-        {/* <SyncButton syncing={props.syncing} handleExecButton={props.handleExecButton} /> */}
+        <MessageBox size={"small"}>{props.message}</MessageBox>
         {(() => {
           if (props.syncing) {
             return (
