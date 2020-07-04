@@ -1,5 +1,7 @@
 # BansheeMusicExporter
 
+![screenshot](./img/screenshot.png)
+
 transfer songs from Banshee Media Player to your portable device.
 
 maybe works only in Linux Debian environment.
