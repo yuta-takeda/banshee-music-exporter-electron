@@ -53,6 +53,7 @@
     "build": "tsc && webpack",
     "build:main": "tsc",
     "build:render": "webpack",
-    "rebuild": "./node_modules/.bin/electron-rebuild -w sqlite3 -p"
+    "rebuild": "./node_modules/.bin/electron-rebuild -w sqlite3 -p",
+    "setup": "tsc && webpack && ./node_modules/.bin/electron-rebuild -w sqlite3 -p"
   }
 }
