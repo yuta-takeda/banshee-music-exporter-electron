@@ -5,7 +5,7 @@ import IPlaylist from "../interfaces/IPlaylist";
 
 interface IProps {
   playlist: IPlaylist;
-  handleClick(e: React.MouseEvent<HTMLInputElement>): void;
+  handleCheckBox(e: React.MouseEvent<HTMLInputElement>): void;
 }
 
 const FlexListContent = styled(List.Content)`
@@ -25,7 +25,7 @@ const PlaylistItem: React.FC<IProps> = props => {
     <div>
       <List>
         <List.Item style={{ margin: "0.5em" }}>
-          <FlexListContent data-key={playlist.type + playlist.playlistId} onClick={props.handleClick}>
+          <FlexListContent data-key={playlist.type + playlist.playlistId} onClick={props.handleCheckBox}>
             <Checkbox label={playlist.name} checked={playlist.checked} onChange={() => console.log("clicked")} />
             <TrackCount>{playlist.trackCount} songs</TrackCount>
           </FlexListContent>

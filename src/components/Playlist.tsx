@@ -8,10 +8,10 @@ interface IProps {
   playlists: IPlaylist[];
   tracksCount: number;
   allFileSize: number;
-  handleClick(e: React.MouseEvent<HTMLInputElement>): void;
+  handleCheckBox(e: React.MouseEvent<HTMLInputElement>): void;
   handleExecButton(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
   syncing: boolean;
-  msg: string;
+  message: string;
 }
 
 const PlaylistBox = styled.div`
@@ -65,21 +65,13 @@ const MessageBox = styled(Segment)`
 const Playlist: React.FC<IProps> = props => {
   const playlistElements = props.playlists.map(playlist => {
     return (
-      <PlaylistItem playlist={playlist} handleClick={props.handleClick} key={playlist.type + playlist.playlistId} />
+      <PlaylistItem
+        playlist={playlist}
+        handleCheckBox={props.handleCheckBox}
+        key={playlist.type + playlist.playlistId}
+      />
     );
   });
-
-  const formatBytes = (bytes: number, decimals = 2) => {
-    if (bytes === 0) return "0 Bytes";
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-  };
 
   return (
     <PlaylistBox>
@@ -89,7 +81,7 @@ const Playlist: React.FC<IProps> = props => {
         </Segment>
         <MessageBox size={"small"}>
           {/* {props.tracksCount} songs - {formatBytes(props.allFileSize)} */}
-          {props.msg}
+          {props.message}
         </MessageBox>
         {/* <SyncButton syncing={props.syncing} handleExecButton={props.handleExecButton} /> */}
         {(() => {

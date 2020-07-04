@@ -4,6 +4,7 @@ import playlistFile from "./playlistFile";
 import sql from "./sql";
 import trackFile from "./trackFile";
 import trackStatistic from "./trackStatistic";
+import common from "./common";
 import { ipcRenderer, IpcRenderer } from "electron";
 
 declare global {
@@ -17,6 +18,7 @@ contextBridge.exposeInMainWorld("playlistFile", playlistFile);
 contextBridge.exposeInMainWorld("sql", sql);
 contextBridge.exposeInMainWorld("trackFile", trackFile);
 contextBridge.exposeInMainWorld("trackStatistic", trackStatistic);
+contextBridge.exposeInMainWorld("common", common);
 contextBridge.exposeInMainWorld("api", {
   send: (channel: string, data: any) => {
     ipcRenderer.send(channel, data);

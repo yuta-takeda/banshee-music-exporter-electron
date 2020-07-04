@@ -23,7 +23,7 @@ const createWindow = (): void => {
 
   win.loadFile("./index.html");
   win.removeMenu();
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
 };
 
 app.allowRendererProcessReuse = false;
